@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تجربة الطفو والغرق</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --water-top: 22%;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            padding: 15px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Progress */
+        .progress-bar-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 30px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar-container span { color: white; font-weight: 700; }
+        
+        .progress-track {
+            flex: 1;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .progress-value {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary), #ec4899);
+            border-radius: 10px;
+            transition: width 0.5s;
+        }
+
+        /* Main Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 800px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Card */
+        .card {
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px;
+        }
+
+        .card-title {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--primary), #8b5cf6);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        /* Materials */
+        .material-item {
+            background: rgba(255,255,255,0.08);
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: grab;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .material-item:hover {
+            border-color: var(--primary);
+            transform: translateX(-5px);
+        }
+
+        .material-item.selected {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .material-item.used {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        .material-item.used::after {
+            content: '✓ تم';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--success);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.8em;
+        }
+
+        .material-item.dragging {
+            opacity: 0.3;
+        }
+
+        .mat-icon {
+            font-size: 2.5em;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+        }
+
+        .mat-info { flex: 1; }
+        .mat-name { color: white; font-weight: 700; font-size: 1.2em; }
+        .mat-density { color: rgba(255,255,255,0.6); font-size: 0.9em; }
+
+        /* Prediction */
+        .prediction-box {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .pred-question {
+            color: white;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .pred-question span {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .pred-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .pred-btn {
+            flex: 1;
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: 700;
+            border: 3px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Tajawal', sans-serif;
+        }
+
+        .pred-btn.float-btn {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            color: white;
+        }
+
+        .pred-btn.sink-btn {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            color: white;
+        }
+
+        .pred-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        .pred-btn.selected {
+            border-color: white;
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        .pred-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Start Button */
+        .start-btn {
+            width: 100%;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+        }
+
+        .start-btn:disabled {
+            background: #4b5563;
+            cursor: not-allowed;
+        }
+
+        /* Tank Area */
+        .tank-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .drop-zone {
+            padding: 15px;
+            border-radius: 20px;
+            border: 3px dashed transparent;
+            transition: all 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .drop-hint {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .drop-zone.drag-over .drop-hint {
+            color: var(--primary);
+        }
+
+        /* Water Tank */
+        .water-tank {
+            width: 300px;
+            height: 400px;
+            position: relative;
+            border: 6px solid #475569;
+            border-top: none;
+            border-radius: 0 0 25px 25px;
+            background: #1e293b;
+            overflow: hidden;
+        }
+
+        /* Tank Top Edge */
+        .tank-top {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            right: -6px;
+            height: 20px;
+            background: #475569;
+            border-radius: 10px 10px 0 0;
+        }
+
+        /* Water */
+        .water {
+            position: absolute;
+            top: var(--water-top);
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg,
+                rgba(56, 189, 248, 0.7) 0%,
+                rgba(14, 165, 233, 0.8) 40%,
+                rgba(3, 105, 161, 0.9) 100%
+            );
+        }
+
+        /* Waves */
+        .wave {
+            position: absolute;
+            top: -12px;
+            left: 0;
+            width: 200%;
+            height: 20px;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120'%3E%3Cpath fill='rgba(255,255,255,0.4)' d='M0,60 C200,100 400,20 600,60 C800,100 1000,20 1200,60 L1200,120 L0,120 Z'/%3E%3C/svg%3E");
+            background-size: 300px 20px;
+            animation: wave 3s linear infinite;
+        }
+
+        @keyframes wave {
+            to { transform: translateX(-50%); }
+        }
+
+        /* Bubbles */
+        .bubbles {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80%;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -20px;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(255,255,255,0.2));
+            border-radius: 50%;
+            animation: rise 4s ease-in infinite;
+        }
+
+        .bubble:nth-child(1) { width: 12px; height: 12px; left: 15%; animation-duration: 3.5s; }
+        .bubble:nth-child(2) { width: 8px; height: 8px; left: 35%; animation-duration: 4.5s; animation-delay: 1s; }
+        .bubble:nth-child(3) { width: 14px; height: 14px; left: 55%; animation-duration: 4s; animation-delay: 2s; }
+        .bubble:nth-child(4) { width: 10px; height: 10px; left: 75%; animation-duration: 5s; animation-delay: 0.5s; }
+
+        @keyframes rise {
+            0% { transform: translateY(0); opacity: 0.8; }
+            100% { transform: translateY(-300px); opacity: 0; }
+        }
+
+        /* Depth Markers */
+        .depth-markers {
+            position: absolute;
+            right: 10px;
+            top: var(--water-top);
+            bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.75em;
+        }
+
+        /* Object */
+        .object {
+            position: absolute;
+            width: 65px;
+            height: 65px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            opacity: 0;
+            z-index: 10;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .object.wood { background: linear-gradient(135deg, #d4a574, #8b5a2b); }
+        .object.iron { background: linear-gradient(135deg, #9ca3af, #4b5563); }
+        .object.plastic { background: linear-gradient(135deg, #fb7185, #e11d48); }
+
+        .object.visible { opacity: 1; }
+
+        .object.drop-anim {
+            animation: dropIn 0.7s ease-in forwards;
+        }
+
+        @keyframes dropIn {
+            0% { top: 0; transform: translateX(-50%) rotate(0deg); }
+            100% { top: calc(var(--water-top) - 30px); transform: translateX(-50%) rotate(360deg); }
+        }
+
+        .object.splash-anim {
+            animation: splashIn 0.5s ease-out forwards;
+        }
+
+        @keyframes splashIn {
+            0% { top: calc(var(--water-top) - 30px); }
+            100% { top: calc(var(--water-top) + 20px); }
+        }
+
+        .object.floating {
+            top: calc(var(--water-top) + 10px) !important;
+            animation: bob 2s ease-in-out infinite !important;
+        }
+
+        @keyframes bob {
+            0%, 100% { transform: translateX(-50%) translateY(0) rotate(-3deg); }
+            50% { transform: translateX(-50%) translateY(-15px) rotate(3deg); }
+        }
+
+        .object.sinking {
+            animation: sinkDown 2.5s ease-in forwards !important;
+        }
+
+        @keyframes sinkDown {
+            0% { top: calc(var(--water-top) + 20px); transform: translateX(-50%); }
+            30% { transform: translateX(-45%) rotate(15deg); }
+            60% { transform: translateX(-55%) rotate(-15deg); }
+            100% { top: calc(100% - 85px); transform: translateX(-50%) rotate(0deg); }
+        }
+
+        .object.at-bottom {
+            top: calc(100% - 85px) !important;
+            animation: none !important;
+        }
+
+        /* Splash */
+        .splash {
+            position: absolute;
+            top: var(--water-top);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 10px;
+            border: 3px solid rgba(255,255,255,0.8);
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 20;
+        }
+
+        .splash.active {
+            animation: splashRing 0.6s ease-out;
+        }
+
+        @keyframes splashRing {
+            0% { width: 10px; height: 10px; opacity: 1; }
+            100% { width: 100px; height: 40px; opacity: 0; }
+        }
+
+        /* Sink Bubbles */
+        .sink-bubbles {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 15;
+            display: none;
+        }
+
+        .sink-bubbles.active { display: block; }
+
+        .sink-bubble {
+            position: absolute;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(255,255,255,0.3));
+            border-radius: 50%;
+            animation: sinkBubble 1.5s ease-out forwards;
+        }
+
+        .sink-bubble:nth-child(1) { width: 10px; height: 10px; left: -15px; animation-delay: 0s; }
+        .sink-bubble:nth-child(2) { width: 14px; height: 14px; left: 5px; animation-delay: 0.2s; }
+        .sink-bubble:nth-child(3) { width: 8px; height: 8px; left: 20px; animation-delay: 0.4s; }
+        .sink-bubble:nth-child(4) { width: 12px; height: 12px; left: -5px; animation-delay: 0.6s; }
+        .sink-bubble:nth-child(5) { width: 9px; height: 9px; left: 15px; animation-delay: 0.8s; }
+
+        @keyframes sinkBubble {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-200px); opacity: 0; }
+        }
+
+        /* Bottom Dust */
+        .bottom-dust {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 15px;
+            background: radial-gradient(ellipse, rgba(255,255,255,0.4), transparent);
+            border-radius: 50%;
+            z-index: 5;
+        }
+
+        .bottom-dust.active {
+            animation: dustSpread 0.8s ease-out;
+        }
+
+        @keyframes dustSpread {
+            0% { width: 0; opacity: 0; }
+            50% { width: 120px; opacity: 0.8; }
+            100% { width: 150px; opacity: 0; }
+        }
+
+        /* Result */
+        .result-box {
+            width: 100%;
+            max-width: 350px;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-box.visible { display: block; animation: fadeIn 0.5s; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-box.correct {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.3));
+            border: 2px solid var(--success);
+        }
+
+        .result-box.wrong {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.3));
+            border: 2px solid var(--danger);
+            animation: fadeIn 0.5s, shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .result-icon { font-size: 3.5em; margin-bottom: 10px; }
+        .result-title { color: white; font-size: 1.4em; font-weight: 700; }
+        .result-desc { color: rgba(255,255,255,0.7); margin-top: 5px; }
+
+        /* Explanation */
+        .explanation {
+            width: 100%;
+            max-width: 350px;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(251, 191, 36, 0.15);
+            border: 2px solid var(--warning);
+            border-radius: 12px;
+            display: none;
+        }
+
+        .explanation.visible { display: block; animation: fadeIn 0.5s 0.2s both; }
+
+        .explanation h4 {
+            color: var(--warning);
+            margin-bottom: 8px;
+        }
+
+        .explanation p {
+            color: rgba(255,255,255,0.9);
+            line-height: 1.6;
+        }
+
+        /* Reset Button */
+        .reset-btn {
+            margin-top: 15px;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Tajawal', sans-serif;
+            display: none;
+        }
+
+        .reset-btn.visible { display: inline-block; animation: fadeIn 0.5s 0.3s both; }
+
+        .reset-btn:hover {
+            transform: translateY(-3px);
+        }
+
+        /* Summary */
+        .summary-box {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .summary-box.visible { display: block; animation: fadeIn 0.5s; }
+
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .summary-table th {
+            background: var(--primary);
+            color: white;
+            padding: 12px;
+        }
+
+        .summary-table td {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-weight: 700;
+            font-size: 0.85em;
+            color: white;
+        }
+
+        .badge.float { background: var(--success); }
+        .badge.sink { background: var(--danger); }
+
+        /* Drag Clone */
+        .drag-clone {
+            position: fixed;
+            width: 70px;
+            height: 70px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            z-index: 9999;
+            pointer-events: none;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .drag-clone.wood { background: linear-gradient(135deg, #d4a574, #8b5a2b); }
+        .drag-clone.iron { background: linear-gradient(135deg, #9ca3af, #4b5563); }
+        .drag-clone.plastic { background: linear-gradient(135deg, #fb7185, #e11d48); }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            z-index: 9999;
+            animation: confettiFall 3s ease-out forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: 600;
+            z-index: 10000;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* Sound Button */
+        .sound-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            font-size: 1.5em;
+            cursor: pointer;
+            z-index: 100;
+        }
+
+        .sound-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="notification" id="notification"></div>
+
+<button class="sound-btn" id="soundBtn" onclick="toggleSound()">🔊</button>
+
+<div class="container">
+    <header class="header">
+        <h1>🌊 تجربة الطفو والغرق</h1>
+        <p>اسحب المادة للماء أو اضغط عليها ثم ابدأ!</p>
+    </header>
+
+    <div class="progress-bar-container">
+        <span>📊 التقدم:</span>
+        <div class="progress-track">
+            <div class="progress-value" id="progressBar"></div>
+        </div>
+        <span id="progressText">0/3</span>
+    </div>
+
+    <div class="main-grid">
+        <!-- Left Panel -->
+        <div class="card">
+            <div class="card-title">🧪 اختر المادة</div>
+
+            <div id="materialsContainer">
+                <div class="material-item" data-material="wood" onclick="selectMaterial('wood')" id="mat-wood">
+                    <div class="mat-icon">🪵</div>
+                    <div class="mat-info">
+                        <div class="mat-name">خشب</div>
+                        <div class="mat-density">الكثافة: 0.6 جم/سم³</div>
+                    </div>
+                </div>
+
+                <div class="material-item" data-material="iron" onclick="selectMaterial('iron')" id="mat-iron">
+                    <div class="mat-icon">🔩</div>
+                    <div class="mat-info">
+                        <div class="mat-name">حديد</div>
+                        <div class="mat-density">الكثافة: 7.8 جم/سم³</div>
+                    </div>
+                </div>
+
+                <div class="material-item" data-material="plastic" onclick="selectMaterial('plastic')" id="mat-plastic">
+                    <div class="mat-icon">🔴</div>
+                    <div class="mat-info">
+                        <div class="mat-name">بلاستيك</div>
+                        <div class="mat-density">الكثافة: 0.9 جم/سم³</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="prediction-box">
+                <p class="pred-question">
+                    ماذا سيحدث لـ <span id="selectedName">___</span> ؟
+                </p>
+                <div class="pred-buttons">
+                    <button class="pred-btn float-btn" id="btnFloat" onclick="setPrediction('float')" disabled>🔵 يطفو</button>
+                    <button class="pred-btn sink-btn" id="btnSink" onclick="setPrediction('sink')" disabled>🔴 يغرق</button>
+                </div>
+            </div>
+
+            <button class="start-btn" id="startBtn" onclick="startExperiment()" disabled>
+                🚀 ابدأ التجربة
+            </button>
+
+            <div class="summary-box" id="summaryBox">
+                <div class="card-title">📊 ملخص النتائج</div>
+                <table class="summary-table">
+                    <thead>
+                        <tr><th>المادة</th><th>النتيجة</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>🪵 خشب</td><td><span class="badge float">يطفو ✓</span></td></tr>
+                        <tr><td>🔴 بلاستيك</td><td><span class="badge float">يطفو ✓</span></td></tr>
+                        <tr><td>🔩 حديد</td><td><span class="badge sink">يغرق ✗</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Panel - Tank -->
+        <div class="card">
+            <div class="card-title">⚗️ حوض التجربة</div>
+
+            <div class="tank-area">
+                <div class="drop-zone" id="dropZone">
+                    <p class="drop-hint" id="dropHint">👆 اسحب المادة هنا أو اضغط "ابدأ"</p>
+
+                    <div class="water-tank" id="waterTank">
+                        <div class="tank-top"></div>
+
+                        <div class="water">
+                            <div class="wave"></div>
+                            <div class="bubbles">
+                                <div class="bubble"></div>
+                                <div class="bubble"></div>
+                                <div class="bubble"></div>
+                                <div class="bubble"></div>
+                            </div>
+                        </div>
+
+                        <div class="depth-markers">
+                            <span>سطح</span>
+                            <span>وسط</span>
+                            <span>قاع</span>
+                        </div>
+
+                        <div class="object" id="theObject"></div>
+                        <div class="splash" id="splash"></div>
+                        
+                        <div class="sink-bubbles" id="sinkBubbles">
+                            <div class="sink-bubble"></div>
+                            <div class="sink-bubble"></div>
+                            <div class="sink-bubble"></div>
+                            <div class="sink-bubble"></div>
+                            <div class="sink-bubble"></div>
+                        </div>
+
+                        <div class="bottom-dust" id="bottomDust"></div>
+                    </div>
+                </div>
+
+                <div class="result-box" id="resultBox">
+                    <div class="result-icon" id="resultIcon">🎉</div>
+                    <div class="result-title" id="resultTitle">النتيجة</div>
+                    <div class="result-desc" id="resultDesc">الوصف</div>
+                </div>
+
+                <div class="explanation" id="explanationBox">
+                    <h4>💡 التفسير العلمي</h4>
+                    <p id="explanationText"></p>
+                </div>
+
+                <button class="reset-btn" id="resetBtn" onclick="resetExperiment()">🔄 جرب مادة أخرى</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// =============== SOUND ===============
+class Sound {
+    constructor() {
+        this.ctx = null;
+        this.muted = false;
+    }
+
+    init() {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+    }
+
+    play(type) {
+        if (this.muted) return;
+        this.init();
+        const c = this.ctx, t = c.currentTime;
+
+        if (type === 'click') {
+            const o = c.createOscillator(), g = c.createGain();
+            o.connect(g); g.connect(c.destination);
+            o.frequency.value = 800; o.type = 'sine';
+            g.gain.setValueAtTime(0.1, t);
+            g.gain.linearRampToValueAtTime(0, t + 0.05);
+            o.start(); o.stop(t + 0.05);
+        }
+
+        if (type === 'success') {
+            [523, 659, 784, 1047].forEach((f, i) => {
+                const o = c.createOscillator(), g = c.createGain();
+                o.connect(g); g.connect(c.destination);
+                o.frequency.value = f; o.type = 'sine';
+                g.gain.setValueAtTime(0, t + i * 0.1);
+                g.gain.linearRampToValueAtTime(0.2, t + i * 0.1 + 0.05);
+                g.gain.linearRampToValueAtTime(0, t + i * 0.1 + 0.3);
+                o.start(t + i * 0.1); o.stop(t + i * 0.1 + 0.3);
+            });
+        }
+
+        if (type === 'error') {
+            [400, 350, 300].forEach((f, i) => {
+                const o = c.createOscillator(), g = c.createGain();
+                o.connect(g); g.connect(c.destination);
+                o.frequency.value = f; o.type = 'sawtooth';
+                g.gain.setValueAtTime(0, t + i * 0.12);
+                g.gain.linearRampToValueAtTime(0.1, t + i * 0.12 + 0.05);
+                g.gain.linearRampToValueAtTime(0, t + i * 0.12 + 0.15);
+                o.start(t + i * 0.12); o.stop(t + i * 0.12 + 0.15);
+            });
+        }
+
+        if (type === 'splash') {
+            const buf = c.createBuffer(1, c.sampleRate * 0.3, c.sampleRate);
+            const d = buf.getChannelData(0);
+            for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (d.length * 0.1));
+            const n = c.createBufferSource(); n.buffer = buf;
+            const f = c.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = 800;
+            const g = c.createGain(); g.gain.setValueAtTime(0.3, t); g.gain.linearRampToValueAtTime(0, t + 0.3);
+            n.connect(f); f.connect(g); g.connect(c.destination); n.start();
+        }
+
+        if (type === 'bubbles') {
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => {
+                    if (this.muted) return;
+                    const o = c.createOscillator(), g = c.createGain();
+                    o.connect(g); g.connect(c.destination);
+                    o.frequency.setValueAtTime(700 + Math.random() * 500, c.currentTime);
+                    o.frequency.linearRampToValueAtTime(1200, c.currentTime + 0.06);
+                    o.type = 'sine';
+                    g.gain.setValueAtTime(0.06, c.currentTime);
+                    g.gain.linearRampToValueAtTime(0, c.currentTime + 0.06);
+                    o.start(); o.stop(c.currentTime + 0.06);
+                }, i * 120);
+            }
+        }
+
+        if (type === 'thud') {
+            const o = c.createOscillator(), g = c.createGain();
+            o.connect(g); g.connect(c.destination);
+            o.frequency.setValueAtTime(120, t);
+            o.frequency.linearRampToValueAtTime(40, t + 0.15);
+            o.type = 'sine';
+            g.gain.setValueAtTime(0.3, t);
+            g.gain.linearRampToValueAtTime(0, t + 0.15);
+            o.start(); o.stop(t + 0.15);
+        }
+    }
+
+    toggle() {
+        this.muted = !this.muted;
+        return this.muted;
+    }
+}
+
+const sound = new Sound();
+
+function toggleSound() {
+    const muted = sound.toggle();
+    document.getElementById('soundBtn').textContent = muted ? '🔇' : '🔊';
+    notify(muted ? '🔇 الصوت مغلق' : '🔊 الصوت مفعّل');
+}
+
+// =============== DATA ===============
+const materials = {
+    wood: { name: 'الخشب', icon: '🪵', floats: true, explain: 'الخشب كثافته (0.6) أقل من الماء (1)، فيطفو لأن قوة الدفع أكبر من وزنه.' },
+    iron: { name: 'الحديد', icon: '🔩', floats: false, explain: 'الحديد كثافته (7.8) أكبر بكثير من الماء، فيغرق للقاع لأن وزنه أكبر من قوة الطفو.' },
+    plastic: { name: 'البلاستيك', icon: '🔴', floats: true, explain: 'البلاستيك كثافته (0.9) أقل من الماء بقليل، فيطفو مع غوص جزء صغير منه.' }
+};
+
+let selected = null;
+let prediction = null;
+let done = [];
+let busy = false;
+let dragClone = null;
+
+// =============== NOTIFY ===============
+function notify(msg, dur = 2500) {
+    const el = document.getElementById('notification');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), dur);
+}
+
+// =============== PROGRESS ===============
+function updateProgress() {
+    const pct = (done.length / 3) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('progressText').textContent = done.length + '/3';
+    if (done.length === 3) {
+        document.getElementById('summaryBox').classList.add('visible');
+        notify('🎉 أحسنت! أكملت كل التجارب!');
+    }
+}
+
+// =============== SELECT MATERIAL ===============
+function selectMaterial(mat) {
+    if (busy) return;
+    if (document.getElementById('mat-' + mat).classList.contains('used')) {
+        notify('⚠️ جربت هذه المادة من قبل!');
+        return;
+    }
+
+    sound.play('click');
+    selected = mat;
+
+    // Update UI
+    document.querySelectorAll('.material-item').forEach(el => el.classList.remove('selected'));
+    document.getElementById('mat-' + mat).classList.add('selected');
+    document.getElementById('selectedName').textContent = materials[mat].name;
+
+    // Enable prediction buttons
+    document.getElementById('btnFloat').disabled = false;
+    document.getElementById('btnSink').disabled = false;
+
+    // Reset prediction
+    prediction = null;
+    document.querySelectorAll('.pred-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById('startBtn').disabled = true;
+
+    // Hide previous results
+    hideResults();
+}
+
+// =============== SET PREDICTION ===============
+function setPrediction(pred) {
+    if (!selected) {
+        notify('⚠️ اختر مادة أولاً!');
+        return;
+    }
+    sound.play('click');
+    prediction = pred;
+
+    document.querySelectorAll('.pred-btn').forEach(b => b.classList.remove('selected'));
+    document.getElementById(pred === 'float' ? 'btnFloat' : 'btnSink').classList.add('selected');
+    document.getElementById('startBtn').disabled = false;
+}
+
+// =============== START EXPERIMENT ===============
+function startExperiment() {
+    if (!selected || !prediction || busy) return;
+
+    busy = true;
+    sound.play('click');
+
+    const mat = materials[selected];
+    const obj = document.getElementById('theObject');
+    const splash = document.getElementById('splash');
+    const sinkBubbles = document.getElementById('sinkBubbles');
+    const bottomDust = document.getElementById('bottomDust');
+
+    // Reset object
+    obj.className = 'object ' + selected;
+    obj.textContent = mat.icon;
+    obj.style.top = '0';
+    obj.classList.add('visible');
+
+    // Disable buttons
+    document.getElementById('startBtn').disabled = true;
+
+    // Step 1: Drop animation
+    obj.classList.add('drop-anim');
+
+    setTimeout(() => {
+        // Step 2: Splash
+        sound.play('splash');
+        splash.classList.add('active');
+        setTimeout(() => splash.classList.remove('active'), 600);
+
+        obj.classList.remove('drop-anim');
+        obj.classList.add('splash-anim');
+
+        setTimeout(() => {
+            obj.classList.remove('splash-anim');
+
+            if (mat.floats) {
+                // FLOAT
+                obj.classList.add('floating');
+                setTimeout(() => showResult(), 1000);
+            } else {
+                // SINK - الحديد يغرق للقاع
+                obj.classList.add('sinking');
+                sinkBubbles.classList.add('active');
+                sound.play('bubbles');
+
+                setTimeout(() => {
+                    sinkBubbles.classList.remove('active');
+                }, 1500);
+
+                // Wait for sink animation to complete
+                setTimeout(() => {
+                    obj.classList.remove('sinking');
+                    obj.classList.add('at-bottom');
+                    sound.play('thud');
+                    bottomDust.classList.add('active');
+                    setTimeout(() => bottomDust.classList.remove('active'), 800);
+                    showResult();
+                }, 2500);
+            }
+        }, 500);
+    }, 700);
+}
+
+// =============== SHOW RESULT ===============
+function showResult() {
+    const mat = materials[selected];
+    const correct = (prediction === 'float' && mat.floats) || (prediction === 'sink' && !mat.floats);
+
+    const resultBox = document.getElementById('resultBox');
+    const resultIcon = document.getElementById('resultIcon');
+    const resultTitle = document.getElementById('resultTitle');
+    const resultDesc = document.getElementById('resultDesc');
+
+    if (correct) {
+        resultBox.className = 'result-box visible correct';
+        resultIcon.textContent = '🎉';
+        resultTitle.textContent = 'إجابة صحيحة!';
+        resultDesc.textContent = mat.name + (mat.floats ? ' طفت كما توقعت!' : ' غرقت كما توقعت!');
+        sound.play('success');
+        createConfetti();
+    } else {
+        resultBox.className = 'result-box visible wrong';
+        resultIcon.textContent = '😅';
+        resultTitle.textContent = 'إجابة خاطئة';
+        resultDesc.textContent = mat.name + (mat.floats ? ' طفت!' : ' غرقت للقاع!');
+        sound.play('error');
+    }
+
+    document.getElementById('explanationText').textContent = mat.explain;
+    document.getElementById('explanationBox').classList.add('visible');
+    document.getElementById('resetBtn').classList.add('visible');
+
+    // Mark as done
+    if (!done.includes(selected)) {
+        done.push(selected);
+        document.getElementById('mat-' + selected).classList.add('used');
+        updateProgress();
+    }
+
+    busy = false;
+}
+
+// =============== HIDE RESULTS ===============
+function hideResults() {
+    document.getElementById('resultBox').classList.remove('visible', 'correct', 'wrong');
+    document.getElementById('explanationBox').classList.remove('visible');
+    document.getElementById('resetBtn').classList.remove('visible');
+}
+
+// =============== RESET ===============
+function resetExperiment() {
+    sound.play('click');
+
+    selected = null;
+    prediction = null;
+
+    document.querySelectorAll('.material-item').forEach(el => el.classList.remove('selected'));
+    document.querySelectorAll('.pred-btn').forEach(b => b.classList.remove('selected'));
+
+    document.getElementById('selectedName').textContent = '___';
+    document.getElementById('btnFloat').disabled = true;
+    document.getElementById('btnSink').disabled = true;
+    document.getElementById('startBtn').disabled = true;
+
+    const obj = document.getElementById('theObject');
+    obj.className = 'object';
+    obj.style.top = '0';
+
+    hideResults();
+}
+
+// =============== CONFETTI ===============
+function createConfetti() {
+    const colors = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#3b82f6'];
+    for (let i = 0; i < 50; i++) {
+        const c = document.createElement('div');
+        c.className = 'confetti';
+        c.style.left = Math.random() * 100 + 'vw';
+        c.style.background = colors[Math.floor(Math.random() * colors.length)];
+        c.style.animationDelay = Math.random() * 1 + 's';
+        c.style.animationDuration = (2 + Math.random() * 2) + 's';
+        if (Math.random() > 0.5) c.style.borderRadius = '50%';
+        document.body.appendChild(c);
+        setTimeout(() => c.remove(), 4000);
+    }
+}
+
+// =============== DRAG AND DROP ===============
+document.addEventListener('DOMContentLoaded', () => {
+    const items = document.querySelectorAll('.material-item');
+    const dropZone = document.getElementById('dropZone');
+
+    items.forEach(item => {
+        item.addEventListener('mousedown', dragStart);
+        item.addEventListener('touchstart', dragStart, { passive: false });
+    });
+
+    document.addEventListener('mousemove', dragMove);
+    document.addEventListener('touchmove', dragMove, { passive: false });
+
+    document.addEventListener('mouseup', dragEnd);
+    document.addEventListener('touchend', dragEnd);
+
+    function dragStart(e) {
+        if (busy) return;
+        const item = e.currentTarget;
+        if (item.classList.contains('used')) return;
+
+        e.preventDefault();
+        const mat = item.dataset.material;
+        selectMaterial(mat);
+
+        const pos = e.touches ? e.touches[0] : e;
+        
+        dragClone = document.createElement('div');
+        dragClone.className = 'drag-clone ' + mat;
+        dragClone.textContent = materials[mat].icon;
+        dragClone.style.left = pos.clientX + 'px';
+        dragClone.style.top = pos.clientY + 'px';
+        document.body.appendChild(dragClone);
+
+        item.classList.add('dragging');
+    }
+
+    function dragMove(e) {
+        if (!dragClone) return;
+        e.preventDefault();
+
+        const pos = e.touches ? e.touches[0] : e;
+        dragClone.style.left = pos.clientX + 'px';
+        dragClone.style.top = pos.clientY + 'px';
+
+        const rect = dropZone.getBoundingClientRect();
+        const over = pos.clientX >= rect.left && pos.clientX <= rect.right &&
+                     pos.clientY >= rect.top && pos.clientY <= rect.bottom;
+        dropZone.classList.toggle('drag-over', over);
+    }
+
+    function dragEnd(e) {
+        if (!dragClone) return;
+
+        const pos = e.changedTouches ? e.changedTouches[0] : e;
+        const rect = dropZone.getBoundingClientRect();
+        const over = pos.clientX >= rect.left && pos.clientX <= rect.right &&
+                     pos.clientY >= rect.top && pos.clientY <= rect.bottom;
+
+        if (over && selected && prediction) {
+            startExperiment();
+        } else if (over && selected && !prediction) {
+            notify('⚠️ اختر توقعك أولاً: يطفو أم يغرق؟');
+        }
+
+        dragClone.remove();
+        dragClone = null;
+
+        document.querySelectorAll('.material-item').forEach(el => el.classList.remove('dragging'));
+        dropZone.classList.remove('drag-over');
+    }
+
+    notify('👋 مرحباً! اختر مادة وتوقع النتيجة', 3500);
+});
+</script>
+
+</body>
+</html>
