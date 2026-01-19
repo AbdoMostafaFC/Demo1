@@ -1115,7 +1115,7 @@ function showResult() {
         createConfetti();
     } else {
         resultBox.className = 'result-box visible wrong';
-        resultIcon.textContent = '😅';
+        resultIcon.textContent = '';
         resultTitle.textContent = 'إجابة خاطئة';
         resultDesc.textContent = mat.name + (mat.floats ? ' طفت!' : ' غرقت للقاع!');
         sound.play('error');
@@ -1258,3 +1258,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
+
